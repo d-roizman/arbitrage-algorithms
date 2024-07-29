@@ -16,9 +16,9 @@ import matplotlib.pyplot as plt
 import datetime
 ```
 
-1. **(Robust) function that retrieves the last two TTM (trailing twelve months) EBITDA data for each stock on your list**
+1. **Function to retrie TTM EV and EBITDA**
 
-Here we use yahoo finance (yfinance) to obtain financial and market data. Despite the fact that financial documents are standardized, sometimes it may not be so. Thats why its always good to write a robust "error-proof" function that gets the correct and complete information. The Enterprise Value (market value + net debt) is calculated (via yfinance) the following way:
+Now, we want to calculate daily EV and EBITDA for every stock in our list. Here we use yahoo finance (yfinance) to obtain financial and market data. Despite the fact that financial documents are standardized, sometimes it may not be so. Thats why its always good to write a robust "error-proof" function that gets the correct and complete information. The Enterprise Value (market value + net debt) is calculated (via yfinance) the following way:
 - (+) 'Current Debt And Capital Lease Obligation'
 - (+) 'Long Term Debt And Capital Lease Obligation'
 - (-) 'Cash Cash Equivalents And Short Term Investments'
