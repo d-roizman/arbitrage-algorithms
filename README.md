@@ -1,5 +1,5 @@
 # Pairs trading algorithm
-This repository contains an algorithm that searches for EV-EBITDA multiple disparities among a list of stocks. Following, there is a short explanation of it:
+This repository contains an simple algorithm that searches for EV-EBITDA multiple disparities among a list of stocks. Following, there is a short explanation of it:
 
 1. Obtain daily EV-EBITDA data for the past 3 months for every stock on your list.
 2. Test for cointegration between EV-EBITDA series of each pair of correlated stocks.
