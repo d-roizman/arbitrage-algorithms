@@ -23,7 +23,8 @@ Now, we want to calculate daily EV and EBITDA for every stock in our list. Here 
 - (+) 'Long Term Debt And Capital Lease Obligation'
 - (-) 'Cash Cash Equivalents And Short Term Investments'
 - (+) market cap
-Where the market cap is obtained by doing 'free floating shares' times 'adjusted close price' for the chosen period. Since we want daily EV/EBITDA, we need to sum this 4 items daily. This is done using this function:
+
+Where market cap is obtained by doing 'free floating shares' times 'adjusted close price' for the chosen period. Since we want daily EV/EBITDA, we need to sum this 4 items daily. This is done using this function:
 ```bash
 
 def TTM_ev_ebitda (tickers) :
@@ -88,8 +89,75 @@ def TTM_ev_ebitda (tickers) :
             tickers.remove(tick)
             continue
     
-    return pd.DataFrame(EV_EBITDA_series)  
-
-````
+    return pd.DataFrame(EV_EBITDA_series)
+```
 
 This function has some redundancies on the calculation of EV, in order to ensure that there will be no missing data.
+
+2. **Testing for cointegration**
+
+   Cointegration is a statistical property of time series. Cointegration-testing decides whether two non-stationary time series are "integrated", which means that they have a long-term equilibrium relationship. If two stocks are cointegrated, we should expect that, after great deviations, they should converge again. Pairs-Trading is based on that idea. In this code, I used the [Johansen test](https://www.math.ku.dk/bibliotek/arkivet/preprints-fra-ims/1989/preprint_1989_-_no_3_johansen__s_ren_-_estimation_and_hypothesis_testing_of_cointegration---.pdf) for cointegration, which is avaliable whithin the package `statsmodels`.
+
+   Nevertheless, instead of testing for the price series, I tested for the EV/EBITDAs time series. Before performing Johansen's cointegration test, though, I filtered my data a little bit, by choosing only correlated (50% or more) EV/EBITDA series.
+
+```bash
+from statsmodels.tsa.stattools import coint
+
+# function to check possible candidates for cointegration test (choosing 50%+ correlated stocks only)
+def get_correlated_stocks(data, correlation_threshold):
+
+    correlation_matrix = data.corr(numeric_only=False)
+    correlated_stocks = {}
+    tickers = list(correlation_matrix.keys())
+    while tickers: 
+        x = tickers.pop()
+        x_correlations = correlation_matrix[x]
+        for y in tickers:
+            if y != x and x_correlations[y] > correlation_threshold:
+                if x in correlated_stocks.keys():
+                    correlated_stocks[x].append(y)
+                else:
+                    correlated_stocks[x] = [y]
+    return correlated_stocks
+
+correlated_stocks = get_correlated_stocks(ev_ebitda_data, correlation_threshold = 0.9)
+#correlated_stocks
+
+# function to perform Johanssen cointegration test for every pair of highly pseudo-correlated stocks
+def get_cointegrated_stocks(data): # how does the test work ?
+    
+    cointegrated_stocks = {}    
+    correlated_stocks = get_correlated_stocks(data, 0.5)
+    tickers = list(correlated_stocks.keys())
+    while tickers:
+        x = tickers.pop()
+        x_data = data[x]
+        for y in correlated_stocks[x]:
+            y_data = data[y]
+            
+            # Perform Cointegration test and discard t_statistics more than 5%
+            t_statistic, p_val, critical_p_val = coint(x_data,y_data)
+            if t_statistic < critical_p_val[1]:
+                if x in cointegrated_stocks.keys():
+                    cointegrated_stocks[x].append(y)
+                else:
+                    cointegrated_stocks[x] = [y]
+    
+    pairs = []
+    keys = list(cointegrated_stocks.keys())
+    while keys:
+        key = keys.pop()
+        pairs += [(key, value) for value in cointegrated_stocks[key] if value not in keys]
+    
+    return pairs
+
+cointegrated_stocks = get_cointegrated_stocks(ev_ebitda_data)
+cointegrated_stocks
+
+```
+
+
+
+
+
+   
