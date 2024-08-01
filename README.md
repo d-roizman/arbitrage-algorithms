@@ -123,7 +123,7 @@ def get_correlated_stocks(data, correlation_threshold):
 correlated_stocks = get_correlated_stocks(ev_ebitda_data, correlation_threshold = 0.9)
 #correlated_stocks
 
-# function to perform Johanssen cointegration test for every pair of highly pseudo-correlated stocks
+# function to perform Johansen cointegration test for every pair of highly pseudo-correlated stocks
 def get_cointegrated_stocks(data): # how does the test work ?
     
     cointegrated_stocks = {}    
@@ -156,8 +156,43 @@ cointegrated_stocks
 
 ```
 
+Now we have a short list of a few cointegrated EV/EBITDA series that could offer arbitrage opportunities. The last thing to do is checking if any of those (cointegrated) series is currently deviated from its "equilibrium".
 
+3. **Buy/Sell Signals**
 
+```bash
+   import numpy as np
 
+# Calculate EV/EBITDA ratios
+for x, y in cointegrated_stocks:
+    ratio = ev_ebitda_data[x]/ev_ebitda_data[y]
+    avg = np.average(ratio)
+    stdev = np.std(ratio)
+    
+    if ratio[-1] > avg + 2 * stdev:
+        print(f'Short {x}, Buy {y}')
+
+        # plot ev/ebitda ratios
+        plt.plot(ratio)
+        plt.axhline(avg, color = 'black')
+        plt.axhline(avg + 2*stdev, color = 'grey')
+        plt.axhline(avg - 2*stdev, color = 'grey')
+        plt.title(f' {x}/{y} EV/EBITDA ratio')
+        plt.show()
+
+    elif ratio[-1] < avg - 2 * stdev:
+        print(f'Short {y}, Buy {x}')
+
+        # plot ev/ebitda ratios
+        plt.plot(ratio)
+        plt.axhline(avg, color = 'black')
+        plt.axhline(avg + 2*stdev, color = 'grey')
+        plt.axhline(avg - 2*stdev, color = 'grey')
+        plt.title(f' {x}/{y} EV/EBITDA ratio')
+        plt.show()
+
+```
+
+If any of those cointegrated EV/EBITDA series is more (or less) than two standard deviations from its 3 months average, we should investigate it, because it is possibly a good trade opportunity!
 
    
