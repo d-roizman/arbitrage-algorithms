@@ -268,24 +268,28 @@ for x, y in cointegrated_stocks:
         print(f'Short {x}, Buy {y}')
 
         # plot ev/ebitda ratios
+        plt.figure(figsize=(8,6), dpi = 600)
         plt.plot(ratio)
         plt.axhline(avg, color = 'black')
         plt.axhline(avg + stdev, color = 'grey')
         plt.axhline(avg - stdev, color = 'grey')
-        plt.title(f' {x}/{y} EV/EBITDA ratio')
+        plt.title(f' {x}/{y} last 3 months EV/EBITDA ratio')
         plt.show()
 
     elif ratio[-1] < avg - stdev:
         print(f'Short {y}, Buy {x}')
 
         # plot ev/ebitda ratios
+        plt.figure(figsize=(8,6), dpi = 600)
         plt.plot(ratio)
         plt.axhline(avg, color = 'black')
         plt.axhline(avg + stdev, color = 'grey')
         plt.axhline(avg - stdev, color = 'grey')
-        plt.title(f' {x}/{y} EV/EBITDA ratio')
+        plt.title(f' {x}/{y} last 3 months EV/EBITDA ratio')
         plt.show()
 
+
+plt.figure(figsize=(8,6), dpi = 600)
 plt.plot(ev_ebitda_data['ABT'])
 plt.plot(ev_ebitda_data['PG'])
 plt.show()
